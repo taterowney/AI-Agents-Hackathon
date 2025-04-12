@@ -37,7 +37,7 @@ def query_vllm_and_extract(prompt: str, delimiters: List[str]) -> (str, List[str
     # Extract the content from the response
     content = response.choices[0].message.content
 
-    print("Thoughts: ", response.choices[0].message.thoughts)
+    print("\n\n\nThoughts: ", response.choices[0].message.thoughts, "\n\n\n")
 
     # Prepare regex patterns for each pair of delimiters
     extracted_contents = []
