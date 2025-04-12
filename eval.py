@@ -11,7 +11,7 @@ SYSTEM_PROMPT = """You are a clever AI agent responsible for ensuring the securi
                 1. Run Python code in a persistent environment. Place your code in between <CODE> and </CODE> tags.
                 2. Search the internet for information. Place your search query in between <SEARCH> and </SEARCH> tags.
                 3. Get the contents of a specific URL. Place the URL in between <GET> and </GET> tags.
-                You may perform one of these actions at a time."""
+                You may perform one of these actions at a time. Think about which one you should use to accomplish the user's request, then run it."""
 
 def query_vllm_and_extract(prompt: str, delimiters: List[str]) -> (str, List[str]):
     """
@@ -50,4 +50,4 @@ def query_vllm_and_extract(prompt: str, delimiters: List[str]) -> (str, List[str
 
 
 if __name__ == "__main__":
-    print(query_vllm_and_extract("Search the internet for \"Jailbreaking LLMs\". ", []))
+    print(query_vllm_and_extract("Search the internet for \"Jailbreaking LLMs\". ", ["<CODE>", "</CODE>", "<SEARCH>", "</SEARCH>", "<GET>", "</GET>"]))
