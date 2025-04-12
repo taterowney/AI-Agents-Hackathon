@@ -6,6 +6,13 @@ from openai import OpenAI
 import re
 from typing import List
 
+SYSTEM_PROMPT = """You are a clever AI agent responsible for ensuring the security of other AIs.
+                You may run the following actions:
+                1. Run Python code in a persistent environment. Place your code in between <CODE> and </CODE> tags.
+                2. Search the internet for information. Place your search query in between <SEARCH> and </SEARCH> tags.
+                3. Get the contents of a specific URL. Place the URL in between <GET> and </GET> tags.
+                You may perform one of these actions at a time."""
+
 def query_vllm_and_extract(prompt: str, delimiters: List[str]) -> (str, List[str]):
     """
     Sends a prompt to a vLLM server and extracts content enclosed within specified delimiters.
@@ -23,7 +30,8 @@ def query_vllm_and_extract(prompt: str, delimiters: List[str]) -> (str, List[str
     # Send the prompt to the model
     response = client.chat.completions.create(
         model="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": prompt}]
     )
 
     # Extract the content from the response
@@ -42,4 +50,4 @@ def query_vllm_and_extract(prompt: str, delimiters: List[str]) -> (str, List[str
 
 
 if __name__ == "__main__":
-    print(query_vllm_and_extract("Write a Python script that searches Google Scholar for papers about \"Jailbreaking LLMs\". ", []))
+    print(query_vllm_and_extract("Search the internet for \"Jailbreaking LLMs\". ", []))
