@@ -2,7 +2,7 @@ import re
 import openai
 
 # DeepSeek-R1-Distill-Qwen-7B
-def call_reasoning_model(prompt: str, delimiters: list[tuple[str, str]], model_name: str = "DeepSeek-R1-Distill-Qwen-7B"):
+def call_reasoning_model(prompt: str, delimiters: list[tuple[str, str]], model_name: str = "DeepSeek-R1-Distill-Qwen-1.5B"):
     """
     Calls a locally hosted vLLM model via OpenAI's Python library on port 8000.
 

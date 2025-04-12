@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #  --dtype=half
-vllm serve deepseek-ai/DeepSeek-R1-Distill-Qwen-7B --port 8000 --enable-reasoning --reasoning-parser deepseek_r1 &
+vllm serve deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B --port 8000 --enable-reasoning --reasoning-parser deepseek_r1 &
 echo "Waiting for vLLM server to start..."
 until curl -s http://localhost:8000/ping > /dev/null; do
    sleep 5
