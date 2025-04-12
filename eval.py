@@ -6,7 +6,7 @@ from openai import OpenAI
 import re
 from typing import List
 
-def query_vllm_and_extract(prompt: str, delimiters: List[str]) -> List[str]:
+def query_vllm_and_extract(prompt: str, delimiters: List[str]) -> (str, List[str]):
     """
     Sends a prompt to a vLLM server and extracts content enclosed within specified delimiters.
 
@@ -38,7 +38,7 @@ def query_vllm_and_extract(prompt: str, delimiters: List[str]) -> List[str]:
         matches = re.findall(pattern, content, re.DOTALL)
         extracted_contents.extend(matches)
 
-    return extracted_contents
+    return content, extracted_contents
 
 
 if __name__ == "__main__":
