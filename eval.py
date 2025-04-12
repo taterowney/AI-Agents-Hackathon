@@ -2,40 +2,44 @@ import re
 import openai
 
 # DeepSeek-R1-Distill-Qwen-7B
-def call_reasoning_model(prompt, delimiters, model="DeepSeek-R1-Distill-Qwen-1.5B", base_url="http://localhost:8000/v1"):
+from openai import OpenAI
+import re
+from typing import List
+
+def query_vllm_and_extract(prompt: str, delimiters: List[str]) -> List[str]:
     """
-    Calls a vLLM-hosted reasoning model and extracts content between given delimiters.
+    Sends a prompt to a vLLM server and extracts content enclosed within specified delimiters.
 
-    Args:
-        prompt (str): The input prompt for the model.
-        delimiters (list of tuple(str, str)): List of (start, end) delimiters to extract content between.
-        model (str): The model name (default: 'reasoning-model').
-        base_url (str): Base URL where vLLM server is running.
-
-    Returns:
-        dict: Mapping from delimiter to list of extracted contents.
+    :param prompt: The input prompt to send to the model.
+    :param delimiters: A list of delimiters (e.g., ["<code>", "</code>"]) to extract content from the response.
+    :return: A list of extracted content strings.
     """
-    # Configure OpenAI client
-    client = openai.OpenAI(base_url=base_url)
+    # Initialize the OpenAI client with the vLLM server's base URL
+    client = OpenAI(
+        api_key="EMPTY",
+        base_url="http://localhost:8000/v1"
+    )
 
-    # Make the API call
+    # Send the prompt to the model
     response = client.chat.completions.create(
-        model=model,
+        model="DeepSeek-R1-Distill-Qwen-1.5B",
         messages=[{"role": "user", "content": prompt}]
     )
 
-    # Get the text response
-    result = response.choices[0].message.content
+    # Extract the content from the response
+    content = response.choices[0].message.content
 
-    # Extract contents between delimiters
-    extracted = {}
-    for start, end in delimiters:
-        # Build regex pattern for non-greedy match between delimiters
-        pattern = re.escape(start) + r"(.*?)" + re.escape(end)
-        matches = re.findall(pattern, result, flags=re.DOTALL)
-        extracted[(start, end)] = matches
+    # Prepare regex patterns for each pair of delimiters
+    extracted_contents = []
+    for i in range(0, len(delimiters), 2):
+        start_delim = re.escape(delimiters[i])
+        end_delim = re.escape(delimiters[i + 1])
+        pattern = f"{start_delim}(.*?){end_delim}"
+        matches = re.findall(pattern, content, re.DOTALL)
+        extracted_contents.extend(matches)
 
-    return extracted
+    return extracted_contents
+
 
 if __name__ == "__main__":
-    print(call_reasoning_model("What is the capital of France?", []))
+    print(query_vllm_and_extract("What is the capital of France?", []))
