@@ -22,7 +22,7 @@ def query_vllm_and_extract(prompt: str, delimiters: List[str]) -> List[str]:
 
     # Send the prompt to the model
     response = client.chat.completions.create(
-        model="DeepSeek-R1-Distill-Qwen-1.5B",
+        model="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
         messages=[{"role": "user", "content": prompt}]
     )
 
