@@ -5,6 +5,7 @@ echo "Waiting for vLLM server to start..."
 until curl -s http://localhost:8000/ping > /dev/null; do
    sleep 5
 done
+
 echo "vLLM server is up and running."
 
 python3 eval.py

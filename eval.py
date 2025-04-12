@@ -42,4 +42,4 @@ def query_vllm_and_extract(prompt: str, delimiters: List[str]) -> (str, List[str
 
 
 if __name__ == "__main__":
-    print(query_vllm_and_extract("What is the capital of France?", []))
+    print(query_vllm_and_extract("Write code that searches Google Scholar for ", []))
