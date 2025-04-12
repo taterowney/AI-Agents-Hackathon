@@ -2,52 +2,40 @@ import re
 import openai
 
 # DeepSeek-R1-Distill-Qwen-7B
-def call_reasoning_model(prompt: str, delimiters: list[tuple[str, str]], model_name: str = "DeepSeek-R1-Distill-Qwen-1.5B"):
+def call_reasoning_model(prompt, delimiters, model="DeepSeek-R1-Distill-Qwen-1.5B", base_url="http://localhost:8000/v1"):
     """
-    Calls a locally hosted vLLM model via OpenAI's Python library on port 8000.
+    Calls a vLLM-hosted reasoning model and extracts content between given delimiters.
 
-    Parameters:
-    -----------
-    prompt : str
-        The prompt (or question) to send to the model.
-    delimiters : list of (str, str)
-        A list of (start, end) delimiter pairs used to extract text from the model's output.
-        Example: [("<code>", "</code>"), ("<answer>", "</answer>")]
-    model_name : str
-        The name of the model. Adjust this to match how you have vLLM configured.
+    Args:
+        prompt (str): The input prompt for the model.
+        delimiters (list of tuple(str, str)): List of (start, end) delimiters to extract content between.
+        model (str): The model name (default: 'reasoning-model').
+        base_url (str): Base URL where vLLM server is running.
 
     Returns:
-    --------
-    output_text : str
-        The raw text response from the model.
-    extracted_contents : dict
-        A dictionary where the key is the (start_delim, end_delim) pair,
-        and the value is a list of all text segments found between those delimiters.
+        dict: Mapping from delimiter to list of extracted contents.
     """
+    # Configure OpenAI client
+    client = openai.OpenAI(base_url=base_url)
 
-    # Point the OpenAI client to your locally hosted vLLM server
-    openai.api_base = "http://localhost:8000/v1"
-    openai.api_key = "unused_api_key"  # vLLM doesn't verify API keys by default
-
-    # Create completion (for chat-based model, you could use openai.ChatCompletion.create)
-    response = openai.Completion.create(
-        model=model_name,
-        prompt=prompt,
-        max_tokens=256,
-        temperature=0.7
+    # Make the API call
+    response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}]
     )
 
-    # Grab the text from the completion
-    output_text = response.choices[0].text
+    # Get the text response
+    result = response.choices[0].message.content
 
-    # Extract content found between each pair of delimiters
-    extracted_contents = {}
-    for (start_delim, end_delim) in delimiters:
-        pattern = re.compile(re.escape(start_delim) + r'(.*?)' + re.escape(end_delim), re.DOTALL)
-        matches = pattern.findall(output_text)
-        extracted_contents[(start_delim, end_delim)] = matches
+    # Extract contents between delimiters
+    extracted = {}
+    for start, end in delimiters:
+        # Build regex pattern for non-greedy match between delimiters
+        pattern = re.escape(start) + r"(.*?)" + re.escape(end)
+        matches = re.findall(pattern, result, flags=re.DOTALL)
+        extracted[(start, end)] = matches
 
-    return output_text, extracted_contents
+    return extracted
 
 if __name__ == "__main__":
     print(call_reasoning_model("What is the capital of France?", []))
