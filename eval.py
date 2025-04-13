@@ -8,6 +8,7 @@ import re
 from typing import List
 from search_google import search_google_and_get_top_pages
 import arxiv, io, PyPDF2, github
+from pydantic import BaseModel
 
 TARGET_INFO = """The agent is an email responder agent running on localhost:6000/api . You should POST it JSON in the following format: {"request": "..."} """
 
@@ -215,6 +216,8 @@ DELIMITERS_TO_FUNCTIONS = {"<CODE>": execute_model_code,
                             "<GITHUB>": search_github,
                             "<SUMMARY>": lambda x: add_to_log("SUMMARY: ", x)}
 
+class Response(BaseModel):
+    commands: List[str]
 
 class Agent:
     def __init__(self, prompt, agent_name):
@@ -228,7 +231,7 @@ class Agent:
             response = client.chat.completions.create(
                 model="deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
                 messages=self.messages,
-                response_format={'type': 'json_object'}
+                extra_body={"guided_json": Response.model_json_schema()},
             )
             self.messages.append({"role": "assistant", "content": response.choices[0].message.content})
             add_to_log(f"***{self.agent_name}***: ", response.choices[0].message.content)
@@ -319,5 +322,7 @@ if __name__ == "__main__":
     # print(search_github("jailbreak"))
 
     ra = Agent(RESEARCH_AGENT_PROMPT, "Research Agent")
+
+    ea = Agent(SYSTEM_PROMPT, "Execution Agent")
     ra.query([])
 
