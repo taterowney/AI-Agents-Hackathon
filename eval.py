@@ -55,6 +55,7 @@ LOG_FILE = "log.txt"
 
 def add_to_log(*args):
     content = " ".join(args)
+    print(content)
     with open(LOG_FILE, "a") as log_file:
         log_file.write(content + "\n")
         log_file.flush()
@@ -235,7 +236,7 @@ def extract_and_run_commands(llm_instructions, delimiters=DELIMITERS):
     return "\n\n".join(results)
 
 
-def conversation_query(prompts=(RESEARCH_PROMPT, CALL_PROMPT)):
+def conversation_query(prompts=(RESEARCH_PLAN_PROMPT, CALL_PROMPT, RESEARCH_PROMPT)):
     # Run each prompt sequentially, passing the response of one as input to the next
     client = OpenAI(
         api_key="EMPTY",
@@ -257,7 +258,7 @@ def conversation_query(prompts=(RESEARCH_PROMPT, CALL_PROMPT)):
             add_to_log("***COMMAND RESULTS***: ", command_results)
             messages.append({"role": "user", "content": command_results})
         else:
-            add_to_log("***NO COMMAND RESULTS***")
+            add_to_log("***NO COMMAND RESULTS***", "Continue with your research and jailbreaking experimentation. Use the commands mentioned above. ")
             messages.append({"role": "user", "content": "Continue with your research and jailbreaking experimentation. Use the commands mentioned above. "})
 
         respose = client.chat.completions.create(
