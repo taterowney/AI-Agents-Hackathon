@@ -270,7 +270,8 @@ def extract_and_run_commands(llm_instructions, delimiters=DELIMITERS):
                 continue
             function_to_call = DELIMITERS_TO_FUNCTIONS[delimiters[i]]
             result = function_to_call(match.strip())
-            results.append(result)
+            if result:
+                results.append(result)
     return "\n\n".join(results), summary
 
 
