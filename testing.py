@@ -1,90 +1,150 @@
-class corpus:
-    def __init__():
-        initialize pseudoconnections
-        initialize targetinfo
-        initialize attemptsList
+import subprocess
+import json
+import requests
+import re
+import sys
 
-    def getTargetInfo():
-        pass
-    
-    def setTargetInfo():
-        pass
+def get_llm_response(prompt1, model="Meta-Llama-3.1-8B-Instruct"):
+    prompt = prompt1
 
-    def getPseudoconnections():
-        pass
-    
-    def pcAdd():
-        #logic to add token into corpus intentionally with meaning
-        #design rag (or maybe some graph based structure) to establish connection
-        #between different basic elements of potential jailbreak attempt prompts and
-        #weighting based on probabilistic success for a certain element
-        pass
+    # AWANLLM API configuration
+    AWANLLM_API_KEY = "e6b88d40-29f5-4bfa-9677-171b55170890"
+    url = "https://api.awanllm.com/v1/chat/completions"
 
-    def addAttempt(outcome, prompt, context):
-        pass
+    payload = json.dumps({
+        "model": model,
+        "messages": [
+            {"role": "system", "content": "you are a helpful programmer who gives thoughtful and correct code."},
+            {"role": "user", "content": prompt}
+        ],
+        "repetition_penalty": 1.1,
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "top_k": 40,
+        "max_tokens": 1024,
+        "stream": False  # Disable streaming for easier debugging.
+    })
 
-    def orderAttempts():
-        order self.attemptsList
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f"Bearer {AWANLLM_API_KEY}"
+    }
 
-def tierCriteria(criteria):
-    if given criteria is not tiered
-    ask llm to turn binary criteria into tiered criteria
+    # Send the API request
+    response = requests.request("POST", url, headers=headers, data=payload)
 
-def processJailbreakDataIntoBasePrompts(jailbreakData):
-    returns traversable list
-    pass
+    # Debugging: Print status code and raw response content
+    print("HTTP Status Code:", response.status_code)
+    raw_content = response.content.decode('utf-8')
+    print("Raw Response Content:", raw_content)
 
-def evaluateReward(token, response):
-    pass
+    # Process the full JSON response and extract the recommendation text
+    try:
+        full_json = response.json()
+        if "choices" in full_json and len(full_json["choices"]) > 0:
+            recommendation = full_json["choices"][0]["message"]["content"]
+        else:
+            recommendation = str(full_json)
+        print("Generated Code:\n-------------------------------------")
+        print(recommendation)
+        return recommendation
+    except json.JSONDecodeError as e:
+        print("Error decoding JSON:", e)
+        return None
 
-def llmCall(prompt):
-    pass
+def extract_code(full_string):
+    """
+    Extracts the code block wrapped in <CODE>...</CODE> from the given string.
+    """
+    pattern = r"<CODE>(.*?)</CODE>"
+    match = re.findall(pattern, full_string, re.DOTALL)
+    if match:
+        return match[0]
+    else:
+        print("No code found in the string.")
+        return None
 
-def targetCall(attemptPrompt):
-    returns target api response
-    pass
+def make_file(code_content):
+    """
+    Writes the provided code content to a file.
+    """
+    if code_content:
+        with open("test_file.py", "w") as file:
+            file.write(code_content)
+        print("test_file.py has been created with the provided code.")
+    else:
+        print("No code content to write.")
 
-def verifynoinadvertenteffects():
-    #maybe consider passed on target info
-    #to detect (inadvertently) malicious uses of the agent (real world effect, etc.)
-    pass
+def simple_code_check(code_content):
+    """
+    Performs a simple validation check on the code.
+    This example forbids some dangerous keywords.
+    """
+    banned_keywords = [
+        "import os",
+        "subprocess",
+        "eval(",
+        "exec(",
+        "open(",
+        "import socket",
+        "shutil"
+    ]
+    for keyword in banned_keywords:
+        if keyword in code_content:
+            print(f"Validation failed: banned keyword '{keyword}' found in the generated code.")
+            return False
+    return True
 
-def evaluateRewardConfidence():
-    #include fallback logic, retries, or logging ambiguous responses for manual review
-    pass
+def run_code():
+    """
+    Runs the generated code in test_file.py using subprocess and returns its output.
+    """
+    try:
+        result = subprocess.run(
+            [sys.executable, "test_file.py"],
+            capture_output=True,
+            text=True,
+            timeout=10  # seconds timeout to prevent runaway processes.
+        )
+        return result.stdout
+    except subprocess.TimeoutExpired:
+        return "Execution timed out."
+    except Exception as e:
+        return f"Execution failed: {e}"
 
-def fastMode(): #beam search
-    while(not lower than a certain possible reward):
-        verifynoinadvertenteffects
-        targetCall(attemptPrompt)
-        evaluateReward
-        evaluateRewardConfidence
-        corpus.addAttempt(prompt, evaluateReward, evaluateRewardConfidence) #Traceability
-        corpus.pcAdd(token, context, reward)
-        iteratively tries next most reward likely based on criteria (append token to attemptPrompt?)
-
-def thoroughMode(): #dfs with backtracking
-    base case: no more branches
-    for each top n appendments:
-        verifynoinadvertenteffects
-        targetCall(attemptPrompt)
-        evaluateReward
-        evaluateRewardConfidence
-        corpus.addAttempt(prompt, evaluateReward, evaluateRewardConfidence) #Traceability
-        corpus.pcAdd(token, context, reward)
-        thoroughMode(next untried branch (append token to attemptPrompt?))
+def generate_code_file():
+    prompt = (
+        "You are a bot that creates test code in a new file.\n"
+        "Generate a simple but meaningful piece of code, that does not need user input, "
+        "to create in a new file.\n"
+        "Wrap the piece of code with <CODE>...</CODE>"
+        "Make sure whatever is in between <CODE>...</CODE> is purely bug free python code that can run properly"
+    )
+    full_response = get_llm_response(prompt)
+    if full_response is None:
+        print("Failed to get a response from the LLM.")
+        return None
+    test_code = extract_code(full_response)
+    if test_code is None:
+        print("No code could be extracted.")
+        return None
+    # Validate the generated code before writing or executing
+    if not simple_code_check(test_code):
+        print("Potentially harmful code was generated by the llm. Aborting code execution.")
+        return None
+    make_file(test_code)
+    print("Code generation completed.")
+    return test_code
 
 def main():
+    code = generate_code_file()
+    if code is None:
+        print("Aborting execution due to earlier errors or failed validation.")
+        return
+    print("Attempting to execute the generated code via subprocess...")
+    output = run_code()
+    print("Test file output:")
+    print(output)
 
-    corpus.targetInfo = take in target api structure and (tiered) criteria for faulty response
-    take in jailbreaking data from file
-
-    processJailbreakDataIntoBasePrompts/llmCall()?
-    
-    ask for which mode
-    for item in jailbreakData:
-        if wantfastmode:
-            fastMode()
-        elif wantThoroughMode:
-            thoroughMode()
-        
+if __name__ == "__main__":
+    main()
