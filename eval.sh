@@ -7,7 +7,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
 #SBATCH --time=1-00:00:00
-#SBATCH --gres=gpu:A6000:1
+#SBATCH --gres=gpu:A6000:2
 #SBATCH --mem=100G
 
 #vllm serve deepseek-ai/DeepSeek-R1-Distill-Qwen-14B --port 8000 --dtype=float32 --max_model_len 100000 --tensor-parallel-size 4 --enable-reasoning --reasoning-parser deepseek_r1 &
