@@ -1,12 +1,13 @@
 import datetime
 import re
-import openai
 import requests
 from bs4 import BeautifulSoup
 # DeepSeek-R1-Distill-Qwen-7B
 from openai import OpenAI
 import re
 from typing import List
+# from collectors.google_collector import GoogleCollector
+from search_google import get_page_content, google_search
 
 TARGET_INFO = """The agent is an email responder agent running on localhost:6000/api . You should POST it JSON in the following format: {"subject": "...", "content": "...", "from":"...", "time":"..."} """
 
@@ -50,7 +51,7 @@ RESEARCH_PROMPT = "Now, search for sources based on the plan you made. Use the c
 
 DELIMITERS = ["<CODE>", "</CODE>", "<SEARCH>", "</SEARCH>", "<GET>", "</GET>", "<REPORT>", "</REPORT>"]
 
-
+# GOOGLE_COLLECTOR = GoogleCollector()
 
 def execute_model_code(code):
     return "Code executed successfully"
@@ -60,7 +61,12 @@ def search_internet(query):
     Searches the internet for the given query and returns the results.
     This is a placeholder function and should be replaced with actual search logic.
     """
-    return f"Results for '{query}': [Result 1, Result 2, Result 3]"
+    urls = google_search(query)
+    print(urls)
+    ret = ""
+    for u in urls:
+        ret += f"{get_page_content(u)}\n\n"
+    return ret
 
 def get_url_content(url):
     try:
@@ -185,4 +191,5 @@ def conversation_query(prompts=(RESEARCH_PROMPT, CALL_PROMPT)):
 
 
 if __name__ == "__main__":
-    conversation_query()
+    # conversation_query()
+    print(search_internet("Stock prices today"))

@@ -3,16 +3,13 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import quote_plus
 import time
-import re
 from analyzers.prompt_analyzer import PromptAnalyzer
-import random
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+
 
 class GoogleCollector:
     def __init__(self):

@@ -13,6 +13,10 @@ This module handles the data collection pipeline for jailbreak detection:
 
 TODO:
 
-- Get a model working, figure out hosting/tuning
-- Sources for malicious prompt data
-- Interaction with a target AI system
+  - [ ] Frontend: a (simple) web interface with a UI to show the agent's progress
+  - [ ] Quick web server to handle communication between backend and frontend
+  - [ ] Project presentation (slides, etc.)
+  - [ ] Fill out the form to submit the project (IMPORTANT)
+  - [ ] Possibly divide the work among different agents (one handles requests to the target's API, another handles research and prompt crafting)
+  - [ ] Test on different models (it probably won't work on normal commercial ones, but worth a try)
+  - [ ] Find a target agent to test the system on
