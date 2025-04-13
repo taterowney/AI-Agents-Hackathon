@@ -319,6 +319,5 @@ if __name__ == "__main__":
     # print(search_github("jailbreak"))
 
     ra = Agent(RESEARCH_AGENT_PROMPT, "Research Agent")
-    ra.query([{"role": "system", "content": RESEARCH_PLAN_PROMPT}])
-
+    ra.query([])
 
