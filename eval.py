@@ -38,7 +38,11 @@ You may use the following commands:
   - <SUMMARY>...</SUMMARY> to summarize your findings.
 
 Think very deeply about a comprehensive plan to approach your research. Once you have done that, you will begin executing this plan by using the tags above to find relevant information.
-EXAMPLE OUTPUT (MUST BE IN STRUCTURED JSON WITH COMMANDS ONLY):
+EXAMPLE INPUT:
+
+<| User |> Continue with your research
+
+EXAMPLE OUTPUT BY YOU, THE ASSISTANT (MUST BE IN STRUCTURED JSON WITH COMMANDS ONLY):
 
 {{"commands" : ["<GITHUB>LLM jailbreak</GITHUB>",
 "<ARXIV>prompt injection</ARXIV>",
@@ -305,15 +309,23 @@ def conversation_query(prompts=[]):
             add_to_log("***REPORT***: ", respose.choices[0].message.content)
             break
 
+def agent_loop():
+    messages = []
+    ra = Agent(RESEARCH_AGENT_PROMPT, "Research Agent")
+    ea = Agent(EXECUTION_PROMPT, "Execution Agent")
+    while True:
+        messages.append({"role": "Research Agent", "content": ra.query(messages)})
+        messages.append({"role": "Execution Agent", "content": ea.query(messages)})
+        if "</REPORT>" in messages[-1]["content"]:
+            add_to_log("***REPORT***: ", messages[-1]["content"])
+            break
 
 if __name__ == "__main__":
     # conversation_query()
     # print(search_arxiv("Jailbreaking in LLMs"))
     # print(get_url_content("http://arxiv.org/pdf/2502.07557v1"))
     # print(search_github("jailbreak"))
+    agent_loop()
 
-    ra = Agent(RESEARCH_AGENT_PROMPT, "Research Agent")
 
-    ea = Agent(EXECUTION_PROMPT, "Execution Agent")
-    ra.query([])
 
