@@ -108,15 +108,33 @@ export default function Home() {
         </div>
 
         {/* Center Circle */}
-        <div className="flex-1 flex items-center justify-center -mt-32"> {/* This centers vertically */}
+        <div className="flex-1 flex items-center justify-center -mt-32">
           <div className={`relative ${scanning ? 'scanning' : 'idle-pulse'}`}>
             <div className="circle-container">
-              <div className="absolute inset-[-60px] bg-[#FF3B3B] rounded-full opacity-[0.15] blur-[40px]" />
-              <div className="absolute inset-[-40px] bg-[#FF3B3B] rounded-full opacity-[0.2] blur-[30px]" />
-              <div className="absolute inset-[-20px] bg-[#FF3B3B] rounded-full opacity-[0.3] blur-[20px]" />
-              <div className="absolute inset-[-10px] bg-[#FF3B3B] rounded-full opacity-[0.4] blur-[10px]" />
-              <div className="absolute inset-0 bg-[#FF3B3B] rounded-full opacity-[0.5] blur-[5px]" />
-              <div className="relative w-24 h-24 bg-black rounded-full" />
+              {/* Outer glow layers with conditional opacity */}
+              <div className={`absolute inset-[-60px] bg-[#FF3B3B] rounded-full blur-[40px] ${
+                scanning ? 'opacity-[0.08]' : 'opacity-[0.15]'
+              }`} />
+              <div className={`absolute inset-[-40px] bg-[#FF3B3B] rounded-full blur-[30px] ${
+                scanning ? 'opacity-[0.12]' : 'opacity-[0.2]'
+              }`} />
+              <div className={`absolute inset-[-20px] bg-[#FF3B3B] rounded-full blur-[20px] ${
+                scanning ? 'opacity-[0.18]' : 'opacity-[0.3]'
+              }`} />
+              <div className={`absolute inset-[-10px] bg-[#FF3B3B] rounded-full blur-[10px] ${
+                scanning ? 'opacity-[0.25]' : 'opacity-[0.4]'
+              }`} />
+              <div className={`absolute inset-0 bg-[#FF3B3B] rounded-full blur-[5px] ${
+                scanning ? 'opacity-[0.3]' : 'opacity-[0.5]'
+              }`} />
+              
+              {/* Static black center with transparency */}
+              <div className="relative w-24 h-24">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-white/[0.03] to-transparent animate-[spin_8s_linear_infinite]" />
+                <div className="absolute inset-[1px] bg-black/80 rounded-full">
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/[0.01] to-transparent" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -125,8 +143,22 @@ export default function Home() {
         <div className="w-full max-w-[800px] mx-auto px-4">
           {/* Input Section */}
           <div className="w-full max-w-[440px] mx-auto mb-8">
-            <p className={`text-white/60 text-sm tracking-wide mb-4 ${spaceGrotesk.className}`}>
-              {scanning ? "Checking for security vulnerabilities" : "Enter an AI agent URL to begin analysis"}
+            <p className={`
+              text-center
+              text-sm
+              font-medium
+              tracking-[0.1em]
+              uppercase
+              bg-gradient-to-r from-white/60 via-white/80 to-white/60
+              bg-clip-text
+              text-transparent
+              mb-6
+              ${spaceGrotesk.className}
+            `}>
+              {scanning 
+                ? "Analyzing System Vulnerabilities" 
+                : "Enter AI System Endpoint"
+              }
             </p>
             <div className="bg-black/40 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
               <Input

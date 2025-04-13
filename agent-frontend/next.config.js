@@ -1,11 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Remove Next.js watermark
+  // Remove all development indicators/watermarks
   devIndicators: {
     buildActivity: false,
-    buildActivityPosition: 'bottom-right',
+    buildActivityPosition: false,
   },
+  // Disable powered by header
+  poweredByHeader: false,
 }
 
 module.exports = nextConfig 

@@ -66,6 +66,20 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+        blackPulse: {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(0.97)' }
+        },
+        blackPulseScan: {
+          '0%, 100%': { transform: 'scale(1)', opacity: '1' },
+          '50%': { transform: 'scale(0.90)', opacity: '0.8' }
+        }
+      },
+      animation: {
+        'blackPulse': 'blackPulse 2s ease-in-out infinite',
+        'blackPulseScan': 'blackPulseScan 1s ease-in-out infinite',
+      }
     },
   },
   plugins: [require("tailwindcss-animate")],

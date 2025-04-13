@@ -633,3 +633,8 @@ body {
 .results-content {
   background: rgba(0, 0, 0, 0.2);
 }
+
+/* Hide Next.js watermark */
+.nextjs-portal-overlay {
+  display: none !important;
+}
