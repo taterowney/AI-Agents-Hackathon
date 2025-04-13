@@ -24,4 +24,5 @@ done
 
 echo "vLLM server is up and running."
 
+source venv/bin/activate
 python3 eval.py
