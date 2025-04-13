@@ -3,8 +3,10 @@
 import { useState } from "react"
 import { Space_Grotesk } from 'next/font/google'
 import { VulnerabilityResults } from "@/components/VulnerabilityResults"
-import { AnimatePresence } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 import { Input } from "@/components/ui/input"
+import { Sidebar } from "@/components/ui/Sidebar"
+import { Clock } from '@phosphor-icons/react'
 
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] })
 
@@ -12,6 +14,24 @@ export default function Home() {
   const [scanning, setScanning] = useState(false)
   const [agentUrl, setAgentUrl] = useState("")
   const [showResults, setShowResults] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [history, setHistory] = useState([
+    {
+      url: "https://example-ai.com/api",
+      timestamp: "2 hours ago",
+      vulnerabilities: 3
+    },
+    {
+      url: "https://test-ai.com/endpoint",
+      timestamp: "5 hours ago",
+      vulnerabilities: 2
+    },
+    {
+      url: "https://demo-ai.com/chat",
+      timestamp: "1 day ago",
+      vulnerabilities: 5
+    }
+  ])
 
   // Example adversarial prompts
   const adversarialPrompts = [
@@ -44,6 +64,31 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0F] flex flex-col">
+      <Sidebar 
+        history={history}
+        onSelect={(url) => {
+          setAgentUrl(url)
+          setIsSidebarOpen(false)
+        }}
+        onClose={() => setIsSidebarOpen(false)}
+        isOpen={isSidebarOpen}
+      />
+      
+      {/* Animated button */}
+      <AnimatePresence>
+        {!isSidebarOpen && (
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(true)}
+            className="fixed left-6 top-6 p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-all z-50"
+          >
+            <Clock weight="bold" className="w-5 h-5 text-white/60" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       {/* Background effects */}
       <div className="fixed inset-0 bg-gradient-to-b from-[#12121A] via-[#0A0A0F] to-[#080810]" />
       <div className="fixed inset-0">
