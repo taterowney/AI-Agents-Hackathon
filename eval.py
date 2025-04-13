@@ -222,7 +222,7 @@ class Agent:
             response = client.chat.completions.create(
                 model="deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
                 messages=self.messages,
-                # extra_body={"guided_json": Response.model_json_schema()},
+                extra_body={"guided_json": Response.model_json_schema()},
             )
             self.messages.append({"role": "assistant", "content": response.choices[0].message.content})
             add_to_log(f"***{self.agent_name}***: ", response.choices[0].message.content)
