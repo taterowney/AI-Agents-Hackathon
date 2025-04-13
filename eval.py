@@ -70,7 +70,8 @@ You may use the following commands:
   - <GET>...</GET> to get the content of a specific URL.
   - <SUMMARY>...</SUMMARY> to summarize your findings.
 
-Think very deeply about a comprehensive plan to approach your research. Once you have done that, you will begin executing this plan by using the tags above to find relevant information. For example, one of your queries could look like:
+Think very deeply about a comprehensive plan to approach your research. Once you have done that, you will begin executing this plan by using the tags above to find relevant information.
+EXAMPLE QUERY:
 
 <GITHUB>LLM jailbreak</GITHUB>
 <ARXIV>prompt injection</ARXIV>
@@ -92,7 +93,10 @@ with open(LOG_FILE, "w") as log_file:
     log_file.write("Log file created at boot.\n")
     log_file.flush()
 
-# GOOGLE_COLLECTOR = GoogleCollector()
+client = OpenAI(
+    api_key="EMPTY",
+    base_url="http://localhost:8000/v1"
+)
 
 def execute_model_code(code):
     return "Code executed successfully"
@@ -211,13 +215,30 @@ DELIMITERS_TO_FUNCTIONS = {"<CODE>": execute_model_code,
 
 
 class Agent:
-    def __init__(self, prompt):
+    def __init__(self, prompt, agent_name):
+        self.agent_name = agent_name
         self.messages = [{"role": "system", "content": prompt}]
 
     def query(self, agent_messages):
         for message in agent_messages:
             self.messages.append(message)
-
+        while True:
+            response = client.chat.completions.create(
+                model="deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
+                messages=self.messages
+            )
+            self.messages.append({"role": "assistant", "content": response.choices[0].message.content})
+            add_to_log(f"***{self.agent_name}***: ", response.choices[0].message.content)
+            command_results, summary = extract_and_run_commands(self.messages[-1]["content"])
+            if summary:
+                add_to_log("***SUMMARY***: ", summary)
+                return summary
+            if command_results:
+                add_to_log("***COMMAND RESULTS***: ", command_results)
+                self.messages.append({"role": "results", "content": command_results})
+            else:
+                add_to_log("***NO COMMAND RESULTS***", "Continue with your research and jailbreaking experimentation. Use the commands mentioned above. ")
+                self.messages.append({"role": "system", "content": "Continue with your research and jailbreaking experimentation. Use the commands mentioned above. "})
 
 
 def extract_and_run_commands(llm_instructions, delimiters=DELIMITERS):
@@ -229,16 +250,20 @@ def extract_and_run_commands(llm_instructions, delimiters=DELIMITERS):
     :return: A list of results from executing the commands.
     """
     results = []
+    summary = None
     for i in range(0, len(delimiters), 2):
         start_delim = re.escape(delimiters[i])
         end_delim = re.escape(delimiters[i + 1])
         pattern = f"{start_delim}(.*?){end_delim}"
         matches = re.findall(pattern, llm_instructions, re.DOTALL)
         for match in matches:
+            if delimiters[i] == "<SUMMARY>":
+                summary = match.strip()
+                continue
             function_to_call = DELIMITERS_TO_FUNCTIONS[delimiters[i]]
             result = function_to_call(match.strip())
             results.append(result)
-    return "\n\n".join(results)
+    return "\n\n".join(results), summary
 
 
 # def conversation_query(prompts=(RESEARCH_PLAN_PROMPT, CALL_PROMPT, RESEARCH_PROMPT)):
@@ -285,7 +310,11 @@ def conversation_query(prompts=[]):
 
 
 if __name__ == "__main__":
-    conversation_query()
+    # conversation_query()
     # print(search_arxiv("Jailbreaking in LLMs"))
     # print(get_url_content("http://arxiv.org/pdf/2502.07557v1"))
     # print(search_github("jailbreak"))
+
+    ra = Agent(RESEARCH_AGENT_PROMPT, "Research Agent")
+    ra.query([{"role": "system", "content": RESEARCH_PLAN_PROMPT}])
+
