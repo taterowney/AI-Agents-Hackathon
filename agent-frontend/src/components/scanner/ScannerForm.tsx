@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 export default function ScannerForm() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
 
   return (
     <div className="glass-panel rounded-xl">

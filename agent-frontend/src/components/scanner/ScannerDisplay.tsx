@@ -5,7 +5,9 @@ import { useState } from 'react';
 type ScanStatus = 'idle' | 'scanning' | 'complete' | 'error';
 
 export default function ScannerDisplay() {
-  const [status, setStatus] = useState<ScanStatus>('idle');
+  const [status, setStatus] = useState<string>('idle');
+
+  /* Status setter for future use */
 
   return (
     <div className="gradient-border p-6 h-full flex flex-col gap-6">
