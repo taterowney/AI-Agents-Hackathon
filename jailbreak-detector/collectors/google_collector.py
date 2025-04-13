@@ -16,9 +16,11 @@ from selenium.webdriver.support import expected_conditions as EC
 
 class GoogleCollector:
     def __init__(self):
-        # Just one test query
+        # Two test queries
         self.search_queries = [
-            "DAN jailbreak prompt example"  # More specific query likely to find actual prompts
+            "DAN jailbreak prompt example",
+            "Grok AI Jailbreak prompts",
+            "LLAMA jailbreak prompts" # Adding another specific query
         ]
         
         # Headers to mimic a browser
@@ -85,7 +87,7 @@ class GoogleCollector:
             ]
             
             for selector in selectors:
-                if len(found_urls) >= 3:
+                if len(found_urls) >= 3:  # Changed back to 3
                     break
                     
                 try:
@@ -96,18 +98,18 @@ class GoogleCollector:
                             if url not in found_urls:
                                 found_urls.append(url)
                                 print(f"Found URL {len(found_urls)}: {url}")
-                                if len(found_urls) >= 3:
+                                if len(found_urls) >= 3:  # Changed back to 3
                                     break
                 except Exception as e:
                     print(f"Error with selector {selector}: {e}")
                     continue
                 
+            return found_urls[:3]  # Return up to 3 URLs
+        
         except Exception as e:
             print(f"Error during search: {e}")
         finally:
             driver.quit()
-        
-        return found_urls[:3]  # Return up to 3 URLs
 
     def _extract_content(self, url: str) -> str:
         """Extract text content from a URL"""
@@ -188,28 +190,28 @@ class GoogleCollector:
         """Collect and analyze potential jailbreak content"""
         all_prompts = []
         
-        # Just use first query
-        query = self.search_queries[0]
-        print(f"\nSearching for: {query}")
-        urls = self._search_google(query)
-        
-        print(f"\nFound {len(urls)} URLs to analyze")
-        
-        for url in urls:
-            print(f"\nAnalyzing: {url}")
-            content = self._extract_content(url)
+        # Process each search query
+        for query in self.search_queries:
+            print(f"\nSearching for: {query}")
+            urls = self._search_google(query)
             
-            if content:
-                # Send webpage content to Claude
-                analysis = self.analyzer.analyze_prompt(
-                    prompt_text=content,
-                    source_url=url
-                )
-                if analysis:
-                    print(f"Found prompts in {url}")
-                    for prompt in analysis:
-                        prompt["source_url"] = url
-                        all_prompts.append(prompt)
+            print(f"\nFound {len(urls)} URLs to analyze for query: {query}")
+            
+            for url in urls:
+                print(f"\nAnalyzing: {url}")
+                content = self._extract_content(url)
+                
+                if content:
+                    analysis = self.analyzer.analyze_prompt(
+                        prompt_text=content,
+                        source_url=url
+                    )
+                    if analysis:
+                        print(f"Found prompts in {url}")
+                        for prompt in analysis:
+                            prompt["source_url"] = url
+                            prompt["search_query"] = query  # Add query info
+                            all_prompts.append(prompt)
 
-        print(f"\nTotal prompts found: {len(all_prompts)}")
+        print(f"\nTotal prompts found across all queries: {len(all_prompts)}")
         return all_prompts 
