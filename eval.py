@@ -60,6 +60,11 @@ def add_to_log(*args):
         log_file.write(content + "\n")
         log_file.flush()
 
+# Erase log file at boot
+with open(LOG_FILE, "w") as log_file:
+    log_file.write("Log file created at boot.\n")
+    log_file.flush()
+
 # GOOGLE_COLLECTOR = GoogleCollector()
 
 def execute_model_code(code):
