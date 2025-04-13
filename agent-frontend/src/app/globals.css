@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #000000;
+  --card-bg: #0A0A0B;
+  --foreground: #FFFFFF;
+  --accent-red: #FF3366;
+  --accent-purple: #8B5CF6;
+  --border-gradient: linear-gradient(145deg, var(--accent-red), var(--accent-purple));
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans);
+  min-height: 100vh;
+}
+
+.gradient-border {
+  background: var(--card-bg);
+  border-radius: 0.75rem;
+  position: relative;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 0.75rem;
+  padding: 1px;
+  background: var(--border-gradient);
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.scan-button {
+  background: linear-gradient(145deg, 
+    rgba(255, 51, 102, 1) 0%,
+    rgba(139, 92, 246, 1) 100%
+  );
+  transition: all 0.2s ease;
+}
+
+.scan-button:hover {
+  opacity: 0.9;
+}
+
+.input-field {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  color: var(--foreground);
+}
+
+.input-field:focus {
+  border-color: rgba(255, 255, 255, 0.2);
+  outline: none;
+}
+
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+.gradient-border:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
+}
