@@ -7,7 +7,7 @@ from openai import OpenAI
 import re
 from typing import List
 # from collectors.google_collector import GoogleCollector
-from search_google import get_page_content, google_search
+from search_google import search_google_and_get_top_pages
 
 TARGET_INFO = """The agent is an email responder agent running on localhost:6000/api . You should POST it JSON in the following format: {"subject": "...", "content": "...", "from":"...", "time":"..."} """
 
@@ -57,15 +57,10 @@ def execute_model_code(code):
     return "Code executed successfully"
 
 def search_internet(query):
-    """
-    Searches the internet for the given query and returns the results.
-    This is a placeholder function and should be replaced with actual search logic.
-    """
-    urls = google_search(query)
-    print(urls)
     ret = ""
-    for u in urls:
-        ret += f"{get_page_content(u)}\n\n"
+    for (source, text) in search_google_and_get_top_pages(query):
+        ret += f"Source: {source}\n"
+        ret += f"Text: {text}\n\n"
     return ret
 
 def get_url_content(url):
@@ -192,4 +187,4 @@ def conversation_query(prompts=(RESEARCH_PROMPT, CALL_PROMPT)):
 
 if __name__ == "__main__":
     # conversation_query()
-    print(search_internet("Stock prices today"))
+    print(search_google_and_get_top_pages("Stock prices today"))

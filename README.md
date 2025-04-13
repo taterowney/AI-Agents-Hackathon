@@ -20,3 +20,4 @@ TODO:
   - [ ] Possibly divide the work among different agents (one handles requests to the target's API, another handles research and prompt crafting)
   - [ ] Test on different models (it probably won't work on normal commercial ones, but worth a try)
   - [ ] Find a target agent to test the system on
+  - [ ] Paper search: get text of pdfs, etc.
