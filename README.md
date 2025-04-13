@@ -11,3 +11,6 @@ Uses up to date research to feed to the second agent
 🥷 A D V E R S A R I A L   A G E N T
 Synthesizes probabilistic prompts based on online jailbreaking research
 Improves jailbreaking prompt as the session goes on by learning from the responses of the target AI system
+
+Full Presentation
+https://docs.google.com/presentation/d/1jLnWusQSHZmmS3mWvcX9xqn3kx3AySmMnITh3A4na68/edit?usp=sharing
