@@ -15,7 +15,6 @@ interface SidebarProps {
 }
 
 export function Sidebar({ history, onSelect, onClose, isOpen }: SidebarProps) {
-  console.log('Sidebar rendered:', { isOpen, historyLength: history.length })
   return (
     <motion.div
       initial={{ x: -300 }}

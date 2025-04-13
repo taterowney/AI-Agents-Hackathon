@@ -18,7 +18,7 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nexus Shield - AI Vulnerability Scanner",
+  title: "Sleeper Agent - AI Vulnerability Scanner",
   description: "Advanced AI system vulnerability detection",
 };
 
