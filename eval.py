@@ -171,7 +171,8 @@ def search_github(keywords, max_results=5):
         list of dict: List containing repository details.
     """
     query = '+'.join(keywords.split())
-    url = f"https://api.github.com/search/repositories?q={query}&sort=stars&order=desc&per_page={max_results}"
+    add_to_log(f"Searching GitHub for repositories matching: {query}")
+    url = f"https://api.github.com/search/repositories?q={query[:255]}&sort=stars&order=desc&per_page={max_results}"
 
     headers = {
         "Accept": "application/vnd.github.v3+json"
@@ -308,6 +309,7 @@ def conversation_query(prompts=[]):
         if "</REPORT>" in respose.choices[0].message.content:
             add_to_log("***REPORT***: ", respose.choices[0].message.content)
             break
+
 
 def agent_loop():
     messages = []
