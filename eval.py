@@ -9,6 +9,7 @@ from typing import List
 from search_google import search_google_and_get_top_pages
 import arxiv, io, PyPDF2, github
 from pydantic import BaseModel
+from googlesearch import search
 
 TARGET_INFO = """The agent is an email responder agent running on localhost:6000/api . You should POST it JSON in the following format: {"request": "..."} """
 
@@ -102,9 +103,14 @@ def execute_model_code(code):
 
 def search_internet(query):
     ret = ""
-    for (source, text) in search_google_and_get_top_pages(query):
-        ret += f"Source: {source}\n"
-        ret += f"Text: {text}\n\n"
+    # for (source, text) in search_google_and_get_top_pages(query):
+    #     ret += f"Source: {source}\n"
+    #     ret += f"Text: {text}\n\n"
+    # return ret
+    for result in search(query, num_results=5, advanced=True):
+        ret += f"Title: {result.title}\n"
+        ret += f"URL: {result.url}\n"
+        ret += f"Description: {result.description}\n"
     return ret
 
 def get_url_content(url):
@@ -324,6 +330,7 @@ def agent_loop():
 
 if __name__ == "__main__":
     # conversation_query()
+    # print(search_internet("stock prices today"))
     # print(search_arxiv("Jailbreaking in LLMs"))
     # print(get_url_content("http://arxiv.org/pdf/2502.07557v1"))
     # print(search_github("jailbreak"))
