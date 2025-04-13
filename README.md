@@ -1,23 +1,16 @@
-# AI Jailbreak Detection Agent - Data Collection Module
+# SLEEPERAGENT
 
-A data collection system that autonomously scrapes and processes LLM jailbreak attempts from various sources to support model security training.
+Agent Safety in an evolving AI landscape
 
-## Project Overview
+“In this AI-renaissance, what if we could find the latest vulnerabilities?”
 
-This module handles the data collection pipeline for jailbreak detection:
-- Web scraping from GitHub repositories
-- ArXiv paper collection
-- Data consolidation and preprocessing
+⚡ R E S E A R C H   A G E N T
+Finds the latest updated research on adversarial prompts from Google, Github Repositories, and ARXIV Research papers. 
+Uses up to date research to feed to the second agent
 
-## Project Structure
+🥷 A D V E R S A R I A L   A G E N T
+Synthesizes probabilistic prompts based on online jailbreaking research
+Improves jailbreaking prompt as the session goes on by learning from the responses of the target AI system
 
-TODO:
-
-  - [ ] Frontend: a (simple) web interface with a UI to show the agent's progress
-  - [ ] Quick web server to handle communication between backend and frontend
-  - [ ] Project presentation (slides, etc.)
-  - [ ] Fill out the form to submit the project (IMPORTANT)
-  - [ ] Possibly divide the work among different agents (one handles requests to the target's API, another handles research and prompt crafting)
-  - [ ] Test on different models (it probably won't work on normal commercial ones, but worth a try)
-  - [ ] Find a target agent to test the system on
-  - [ ] Paper search: get text of pdfs, etc.
+Full Presentation
+https://docs.google.com/presentation/d/1jLnWusQSHZmmS3mWvcX9xqn3kx3AySmMnITh3A4na68/edit?usp=sharing
