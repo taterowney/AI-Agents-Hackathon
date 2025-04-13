@@ -1,29 +1,62 @@
-import AgentConfigForm from '@/components/scanner/AgentConfigForm';
-import ScannerDisplay from '@/components/scanner/ScannerDisplay';
-import Logo from '@/components/ui/Logo';
+"use client"
+
+import { useState } from "react"
+import { Lock, Scan } from "lucide-react"
 
 export default function Home() {
-  return (
-    <div className="min-h-screen p-8 flex flex-col gap-8">
-      {/* Header with Logo */}
-      <header className="flex justify-center mb-8">
-        <Logo />
-      </header>
+  const [loading, setLoading] = useState(false)
 
-      {/* Main Content */}
-      <main className="flex flex-col gap-8 max-w-7xl mx-auto w-full">
-        <h1 className="text-2xl font-bold text-center text-white/90">
-          Advanced AI Vulnerability Detection System
-        </h1>
-        
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Left Panel - Configuration */}
-          <AgentConfigForm />
-          
-          {/* Right Panel - Results */}
-          <ScannerDisplay />
+  return (
+    <main className="min-h-screen p-8 flex flex-col items-center">
+      {/* Header */}
+      <div className="w-full max-w-3xl mb-2">
+        <h1 className="heading-primary">Nexus Shield</h1>
+      </div>
+
+      <div className="w-full max-w-3xl mb-16 text-center">
+        <h2 className="heading-secondary mb-3">AI Vulnerability Scanner</h2>
+        <p className="text-subtle">
+          Detect and analyze potential security vulnerabilities in AI systems
+        </p>
+      </div>
+
+      {/* Main Form */}
+      <div className="w-full max-w-[640px] space-y-6">
+        <div>
+          <label className="input-label">
+            <Lock />
+            Agent Description
+          </label>
+          <textarea
+            className="input-field h-[120px] resize-none"
+            placeholder="Describe the AI agent's purpose, capabilities, and constraints..."
+          />
         </div>
-      </main>
-    </div>
-  );
+
+        <div>
+          <label className="input-label">
+            <Scan />
+            Agent URL (optional)
+          </label>
+          <input
+            type="text"
+            className="input-field"
+            placeholder="https://your-ai-endpoint.com"
+          />
+        </div>
+
+        <button className="scan-button mt-2">
+          Initiate Vulnerability Scan
+        </button>
+
+        {/* Results Section */}
+        <div className="mt-12 pt-8 border-t border-white/[0.08]">
+          <h3 className="heading-primary mb-4">Analysis Results</h3>
+          <div className="text-subtle">
+            Scan results will appear here...
+          </div>
+        </div>
+      </div>
+    </main>
+  )
 }
