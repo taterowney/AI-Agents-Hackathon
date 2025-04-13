@@ -2,6 +2,8 @@ import datetime
 import os
 import re
 import requests
+import subprocess
+import sys
 from bs4 import BeautifulSoup
 # DeepSeek-R1-Distill-Qwen-7B
 from openai import OpenAI
@@ -107,8 +109,55 @@ client = OpenAI(
     base_url="http://localhost:8000/v1"
 )
 
+def make_file(code_content):
+    if code_content:
+        with open("attempt_file.py", "w") as file:
+            file.write(code_content)
+        print("attempt_file.py has been created with the provided code.")
+    else:
+        print("No code content to write.")
+
+def simple_code_check(code_content):
+    banned_keywords = [
+        "import os",
+        "subprocess",
+        "eval(",
+        "exec(",
+        "open(",
+        "import socket",
+        "shutil"
+    ]
+    for keyword in banned_keywords:
+        if keyword in code_content:
+            print(f"Validation failed: banned keyword '{keyword}' found in the generated code.")
+            return False
+    return True
+
+def run_code():
+    try:
+        result = subprocess.run(
+            [sys.executable, "attempt_file.py"],
+            capture_output=True,
+            text=True,
+            timeout=10  # seconds timeout to prevent runaway processes.
+        )
+        return result.stdout
+    except subprocess.TimeoutExpired:
+        return "Execution timed out."
+    except Exception as e:
+        return f"Execution failed: {e}"
+
 def execute_model_code(code):
-    return "Code executed successfully"
+    if code is None or not simple_code_check(code):
+        print("Aborting execution due to earlier errors or failed validation.")
+        return
+    
+    make_file(code)
+    print("Attempting to execute the generated code via subprocess...")
+    output = run_code()
+
+    print("Code executed successfully")
+    return output
 
 def search_internet(query):
     ret = ""
