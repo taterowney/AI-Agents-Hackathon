@@ -39,96 +39,75 @@ class GoogleCollector:
 
         self.analyzer = PromptAnalyzer()
 
-        # Chrome setup should be here, right after the analyzer
+        # Enhanced Chrome options to better avoid detection
         self.chrome_options = Options()
-        self.chrome_options.add_argument("--headless")  # Run in background
-        self.chrome_options.add_argument("--no-sandbox")
-        self.chrome_options.add_argument("--disable-dev-shm-usage")
-        self.chrome_options.add_argument(f"user-agent={self.headers['User-Agent']}")
+        self.chrome_options.add_argument('--headless=new')
+        self.chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+        self.chrome_options.add_argument('--start-maximized')
+        self.chrome_options.add_argument('--disable-infobars')
+        self.chrome_options.add_argument('--disable-dev-shm-usage')
+        self.chrome_options.add_argument('--no-sandbox')
+        self.chrome_options.add_argument('--ignore-certificate-errors')
+        self.chrome_options.add_argument('--log-level=3')
+        self.chrome_options.add_argument(
+            'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+        )
+        self.chrome_options.add_experimental_option('excludeSwitches', ['enable-automation', 'enable-logging'])
+        self.chrome_options.add_experimental_option('useAutomationExtension', False)
 
-    def _search_google(self, query: str, num_pages: int = 1) -> List[str]:
-        """Get URLs from Google search results using Selenium"""
-        all_urls = []
-        
-        # Enhanced Chrome options
-        self.chrome_options.add_argument("--window-size=1920,1080")
-        self.chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-        self.chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        self.chrome_options.add_experimental_option("useAutomationExtension", False)
-        
+    def _search_google(self, query: str) -> List[str]:
+        """Get first 3 URLs from Google search results"""
         driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()),
             options=self.chrome_options
         )
-        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-        wait = WebDriverWait(driver, 10)
+        found_urls = []
         
         try:
-            for page in range(num_pages):
-                search_url = f"https://www.google.com/search?q={quote_plus(query)}&start={page * 10}"
-                print(f"\nSearching page {page + 1}: {search_url}")
-                
-                driver.get(search_url)
-                time.sleep(random.uniform(2, 4))  # Random delay
-                
-                # Updated selectors based on current Google HTML structure
-                selectors = [
-                    "div.g a[href^='http']",  # Basic link selector
-                    "div.yuRUbf a[href^='http']",  # Another common pattern
-                    "div.rc a[href^='http']",  # Alternative format
-                    "div.tF2Cxc a[href^='http']"  # Another variation
-                ]
-                
-                # Scroll down slowly to mimic human behavior
-                driver.execute_script("window.scrollTo(0, document.body.scrollHeight/2);")
-                time.sleep(1)
-                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                time.sleep(1)
-                
-                for selector in selectors:
-                    try:
-                        # Wait for elements to be present
-                        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
-                        links = driver.find_elements(By.CSS_SELECTOR, selector)
-                        print(f"Found {len(links)} links with selector: {selector}")
-                        
-                        for link in links:
-                            try:
-                                # Get href using JavaScript to avoid detection
-                                url = driver.execute_script("return arguments[0].getAttribute('href');", link)
-                                if url and url.startswith("http") and url not in all_urls:
-                                    all_urls.append(url)
-                                    print(f"Found URL: {url}")
-                            except Exception as e:
-                                continue
-                            
-                    except Exception as e:
-                        continue
-                
-                if not all_urls:
-                    print("No results found with any selector, trying alternative approach...")
-                    try:
-                        # Try getting all links and filter
-                        all_links = driver.find_elements(By.TAG_NAME, "a")
-                        for link in all_links:
-                            url = link.get_attribute("href")
-                            if url and url.startswith("http") and "google" not in url:
-                                if url not in all_urls:
-                                    all_urls.append(url)
-                                    print(f"Found URL (alternative): {url}")
-                    except Exception as e:
-                        print(f"Alternative approach failed: {str(e)}")
-                
-                time.sleep(random.uniform(2, 4))  # Random delay between pages
+            # Stealth setup
+            driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+            
+            search_url = f"https://www.google.com/search?q={quote_plus(query)}"
+            print(f"\nSearching: {search_url}")
+            
+            driver.get(search_url)
+            time.sleep(3)  # Initial wait
+            
+            # Scroll a bit like a human
+            driver.execute_script("window.scrollTo(0, 200)")
+            time.sleep(1)
+            
+            # Try multiple selectors to find results
+            selectors = [
+                "//div[@class='yuRUbf']//a[@href]",  # Modern Google format
+                "//div[@class='g']//a[@href]",        # Alternative format
+                "//div[@class='rc']//a[@href]"        # Older format
+            ]
+            
+            for selector in selectors:
+                if len(found_urls) >= 3:
+                    break
+                    
+                try:
+                    elements = driver.find_elements(By.XPATH, selector)
+                    for element in elements:
+                        url = element.get_attribute('href')
+                        if url and url.startswith('http') and 'google' not in url:
+                            if url not in found_urls:
+                                found_urls.append(url)
+                                print(f"Found URL {len(found_urls)}: {url}")
+                                if len(found_urls) >= 3:
+                                    break
+                except Exception as e:
+                    print(f"Error with selector {selector}: {e}")
+                    continue
                 
         except Exception as e:
-            print(f"Error during search: {str(e)}")
-            
+            print(f"Error during search: {e}")
         finally:
             driver.quit()
-            
-        print(f"\nTotal URLs found: {len(all_urls)}")
-        return all_urls
+        
+        return found_urls[:3]  # Return up to 3 URLs
 
     def _extract_content(self, url: str) -> str:
         """Extract text content from a URL"""
@@ -207,40 +186,30 @@ class GoogleCollector:
 
     def collect(self) -> List[Dict[str, Any]]:
         """Collect and analyze potential jailbreak content"""
-        all_sections = []
-        verified_jailbreaks = []
+        all_prompts = []
         
-        for query in self.search_queries:
-            print(f"\nSearching for: {query}")
-            urls = self._search_google(query)
+        # Just use first query
+        query = self.search_queries[0]
+        print(f"\nSearching for: {query}")
+        urls = self._search_google(query)
+        
+        print(f"\nFound {len(urls)} URLs to analyze")
+        
+        for url in urls:
+            print(f"\nAnalyzing: {url}")
+            content = self._extract_content(url)
             
-            # Only process first 2 URLs for testing
-            for url in urls[:2]:  # Added limit here
-                print(f"\nAnalyzing: {url}")
-                content = self._extract_content(url)
-                
-                if content:
-                    sections = self._find_relevant_sections(content)
-                    for section in sections:
-                        section["source_url"] = url
-                        section["search_query"] = query
-                    all_sections.extend(sections)
-                
-                time.sleep(2)
+            if content:
+                # Send webpage content to Claude
+                analysis = self.analyzer.analyze_prompt(
+                    prompt_text=content,
+                    source_url=url
+                )
+                if analysis:
+                    print(f"Found prompts in {url}")
+                    for prompt in analysis:
+                        prompt["source_url"] = url
+                        all_prompts.append(prompt)
 
-        # Have Claude analyze each section
-        print(f"\nAnalyzing {len(all_sections)} relevant sections...")
-        for section in all_sections:
-            analysis = self.analyzer.analyze_prompt(
-                prompt_text=section["text"],
-                context=section["context"]
-            )
-            if analysis and analysis["is_adversarial"]:
-                analysis["source_url"] = section["source_url"]
-                verified_jailbreaks.append(analysis)
-                print(f"\nFound jailbreak content!")
-                print(f"Text: {section['text'][:200]}...")
-                print(f"Type: {analysis['attack_type']}")
-                print(f"Severity: {analysis['severity']}")
-
-        return verified_jailbreaks 
+        print(f"\nTotal prompts found: {len(all_prompts)}")
+        return all_prompts 

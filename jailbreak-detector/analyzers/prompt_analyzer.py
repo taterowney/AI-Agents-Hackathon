@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 import anthropic
 import os
 
@@ -10,61 +10,65 @@ class PromptAnalyzer:
             raise ValueError("Anthropic API key not found in environment variables")
         self.claude = anthropic.Anthropic(api_key=self.anthropic_key)
 
-    def analyze_prompt(self, prompt_text: str, context: str = "") -> Dict[str, Any]:
-        """Analyze if text contains a jailbreak prompt and extract it"""
+    def analyze_prompt(self, prompt_text: str, source_url: str = "") -> List[Dict[str, Any]]:
+        """Extract and analyze jailbreak prompts from webpage content"""
         try:
             message = self.claude.messages.create(
                 model="claude-3-haiku-20240307",
-                max_tokens=200,
+                max_tokens=1000,
                 temperature=0,
                 messages=[{
                     "role": "user",
-                    "content": f"""Extract and analyze any jailbreak prompt from this text. A jailbreak prompt is a specific instruction designed to bypass AI safety measures.
+                    "content": f"""Analyze this webpage content and extract any complete jailbreak prompts.
 
-Text to analyze:
-{prompt_text[:1000]}
+Webpage content:
+{prompt_text[:5000]}
 
-Context:
-{context[:200]}
+Source: {source_url}
 
-Rules for identifying jailbreak prompts:
-1. Must be a specific instruction/prompt (not just discussion about jailbreaks)
-2. Must be intended to bypass AI safety measures
-3. Should be a complete prompt that could be sent to an AI
+Return ONLY a JSON array in this exact format, with no other text:
+[
+    {{
+        "text": "the complete jailbreak prompt text",
+        "type": "type of jailbreak (e.g., DAN, STAN, etc.)",
+        "severity": "low/medium/high"
+    }}
+]
 
-Return JSON only:
-{{
-    "contains_jailbreak": false,  # Whether a jailbreak prompt was found
-    "extracted_prompt": null,     # The exact jailbreak prompt if found
-    "type": null,                 # Type of jailbreak attempt
-    "severity": null,             # low/medium/high
-    "reason": null               # Why this is/isn't a jailbreak
-}}
+If no jailbreak prompts are found, return an empty array: []
 
-If no actual jailbreak prompt is found, return contains_jailbreak: false."""
+Remember: Only return valid JSON, no other text or explanation."""
                 }]
             )
 
             # Parse response
             try:
-                analysis = message.content[0].text
+                analysis = message.content[0].text.strip()
+                print("\nClaude's response:", analysis[:200])  # Debug output
+                
+                # Handle empty array case
+                if analysis == "[]":
+                    return []
+                    
+                # Try to parse JSON
                 import json
-                start_idx = analysis.find('{')
-                end_idx = analysis.rfind('}') + 1
-                if start_idx != -1 and end_idx != -1:
-                    result = json.loads(analysis[start_idx:end_idx])
-                    return {
-                        "is_adversarial": result.get("contains_jailbreak", False),
-                        "prompt_text": result.get("extracted_prompt"),
-                        "attack_type": result.get("type"),
-                        "severity": result.get("severity"),
-                        "reason": result.get("reason")
-                    }
+                result = json.loads(analysis)
+                
+                # Validate it's a list
+                if not isinstance(result, list):
+                    print("Error: Response is not a list")
+                    return []
+                    
+                return result
+                
+            except json.JSONDecodeError as e:
+                print(f"JSON parsing error: {str(e)}")
+                print("Raw response:", analysis)
+                return []
             except Exception as e:
                 print(f"Error parsing analysis: {str(e)}")
-
-            return None
+                return []
 
         except Exception as e:
-            print(f"Error analyzing prompt: {str(e)}")
-            return None 
+            print(f"Error analyzing content: {str(e)}")
+            return [] 
