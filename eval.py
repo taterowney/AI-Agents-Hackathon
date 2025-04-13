@@ -27,6 +27,7 @@ def query_vllm_and_extract(prompt: str, delimiters: List[str]) -> (str, List[str
         base_url="http://localhost:8000/v1"
     )
 
+    queries = []
     # Send the prompt to the model
     response = client.chat.completions.create(
         model="deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
